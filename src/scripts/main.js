@@ -1,5 +1,35 @@
 (function() {
     "use strict";
+    $(() => {
+
+        /*----------------*/
+        /* Initialization */
+        /*----------------*/
+
+        /*---------*/
+        /* Classes */
+        /*---------*/
+
+        /*-----------*/
+        /* Functions */
+        /*-----------*/
+
+        function switchCode(code) {
+
+        }
+
+        function main() {
+            $get
+        }
+
+        function initialization() {
+            setInterval(main, 3000);
+        }
+        initialization();
+    });
+}) ();
+(function() {
+    "use strict";
 
     const CSS_BODY = {
         "background-color" : "#4C566A",
