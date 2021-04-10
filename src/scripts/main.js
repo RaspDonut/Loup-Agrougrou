@@ -93,18 +93,35 @@
         "margin" : "20px",
     }
 
+    const CSS_LINE_ITEM = {
+        "margin-right" : "20px",
+        "color" : "#D8DEE9",
+    }
+
     class User {
         constructor() {
-            this.user_id = 0;
-            this.username = "guest";
+            this.id = -1;
+            this.username = "";
         }
 
         setId(id) {
-            this.user_id = id;
+            this.id = id;
         }
 
         setUsername(username) {
             this.username = username;
+        }
+
+        setRoom(room_data) {
+            this.room = new Room (room_data['room_id'], room_data['room_name'], room_data['room_creator']);
+        }
+    }
+
+    class Room {
+        constructor (room_id, room_name, room_creator) {
+            this.id = room_id;
+            this.name = room_name;
+            this.creator = room_creator;
         }
     }
 
@@ -334,13 +351,15 @@
                     url: "http://raspdonut.alwaysdata.net/php/join_room.php",
                     type: "POST",
                     data: {'room_id' : room_id},
-                    dataType: "text"
+                    dataType: "json"
                 }).done(function(data) {
-                    console.log(data);
                     if(data == "Existn't") {
                         alert("The room does not exist !");
                     } else {
-
+                        console.log(data);
+                        user.setRoom(data);
+                        $("#main-menu").remove();
+                        roomDisplay($("body"));
                     }
                 });
             }
@@ -372,7 +391,7 @@
         $("#create-room-input").css(CSS_FORM_INPUT);
 
         $("#create-submit").css(CSS_FORM_SUBMIT).click(function(){
-            let room_name = $("#create-room-input");
+            let room_name = $("#create-room-input").val();
 
             if (room_name == "") {
                 alert("You must type something");
@@ -383,7 +402,9 @@
                     data: {'room_name' : room_name, 'creator_id' : user.id},
                     dataType: "json"
                 }).done(function(data) {
-                    console.log(data);
+                    user.setRoom(data);
+                    $("#main-menu").remove();
+                    roomDisplay($("body"));
                 });
             }
         }).mouseover(function() {
@@ -398,6 +419,28 @@
             })
         });
     }//mainMenuDisplay
+
+    function roomDisplay($root) {
+        $root.append("<p id='room-menu'></p>");
+        let $room_menu = $("#room-menu");
+        $room_menu.css(CSS_MENU);
+        $room_menu.append("<img id='logo' src='img/logo.png' width='500px' height='63px'/>");
+        $("#logo").css("margin-left", "10px");
+        $room_menu.append("<div id='room-card'></div>");
+
+        let $room_card = $("#room-card");
+        $room_card.css(CSS_CARD).append("<div id='name-id-item'></div>");
+        $room_card.append("<div id='chatbox'></div>");
+        $room_card.append("<div id='input-chat-item'></div>");
+        $room_card.append("<div id='leave-room-item'></div>");
+
+        let $name_id_item = $("#name-id-item");
+        $name_id_item.css(CSS_MENU_ITEM).append("<p id='room-name'>Room name : "+user.room.name+"</p>");
+        $name_id_item.append("<p id='room-id'>Room ID : "+user.room.id+"</p>");
+        $("#room-name").css(CSS_LINE_ITEM);
+        $("#room-id").css(CSS_LINE_ITEM);
+
+    }
 
     function appendDisconnectButton() {
         $("#user-display").append("<span id='disconnect-icon' class='material-icons'>logout</span>");

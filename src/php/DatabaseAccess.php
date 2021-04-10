@@ -100,7 +100,7 @@
          * @param string $room_name Name of the new room
          * @param int $creator_id Creator of the new room
          */
-        public function addRoom(string $room_name, int $creator_id) {
+        public function addRoom(string $room_name, int $creator_id): ?Room {
             while (true) {
                 $rand_id = $this->randomRoomID();
                 if ($this->getRoomById($rand_id) == NULL) {
@@ -113,6 +113,8 @@
             if(!$prepared_query->execute()) {
                 error_log("Error adding a new room (file: DatabaseAccess.php)", 3, "logs");
             }
+
+            return new Room($rand_id, $room_name, $creator_id);
         }
 
         /**

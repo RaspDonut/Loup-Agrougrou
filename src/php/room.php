@@ -7,9 +7,9 @@ class Room
     private $id;
 
     /**
-     * @var string $room_name Room's Name
+     * @var string $name Room's Name
      */
-    private $username;
+    private $name;
 
     /**
      * @var int $creator_id Room creator's ID
@@ -19,12 +19,12 @@ class Room
     /**
      * Constructs a new room
      * @param int $id
-     * @param string $username
+     * @param string $name
      * @param int $creator_id
      */
-    public function __construct(int $id, string $username, int $creator_id) {
+    public function __construct(int $id, string $name, int $creator_id) {
         $this->id = $id;
-        $this->username = $username;
+        $this->name = $name;
         $this->creator_id = $creator_id;
     }
 
@@ -41,7 +41,7 @@ class Room
      */
     public function getRoomName(): string
     {
-        return $this->room_name;
+        return $this->name;
     }
 
     /**
