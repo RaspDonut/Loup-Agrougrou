@@ -98,6 +98,17 @@
         "color" : "#D8DEE9",
     }
 
+    const CSS_CHATBOX = {
+        "width" : "95%",
+        "height" : "200px",
+        "border" : "1px solid white",
+        "align-self" : "center",
+        "margin-bottom" : "20px",
+        "background-color" : "#3B4252",
+        "color" : "#D8DEE9",
+        "overflow" : "auto",
+    }
+
     class User {
         constructor() {
             this.id = -1;
@@ -122,6 +133,11 @@
             this.id = room_id;
             this.name = room_name;
             this.creator = room_creator;
+            this.lastMessageID = 0;
+        }
+
+        setLastMessageID(message_id) {
+            this.lastMessageID = message_id;
         }
     }
 
@@ -307,7 +323,7 @@
         }).mouseover(function() {
             $(this).css({
                 "background-color" : "#3B4252",
-                "color" : "#D8DEE9",
+                "color" : "#DDEE98",
             })
         }).mouseout(function() {
             $(this).css({
@@ -356,7 +372,6 @@
                     if(data == "Existn't") {
                         alert("The room does not exist !");
                     } else {
-                        console.log(data);
                         user.setRoom(data);
                         $("#main-menu").remove();
                         roomDisplay($("body"));
@@ -423,16 +438,16 @@
     function roomDisplay($root) {
         $root.append("<p id='room-menu'></p>");
         let $room_menu = $("#room-menu");
-        $room_menu.css(CSS_MENU);
+        $room_menu.css(CSS_MENU).css("width" , "60%");
         $room_menu.append("<img id='logo' src='img/logo.png' width='500px' height='63px'/>");
         $("#logo").css("margin-left", "10px");
         $room_menu.append("<div id='room-card'></div>");
+        $room_menu.append("<div id='leave-room-item'></div>");
 
         let $room_card = $("#room-card");
         $room_card.css(CSS_CARD).append("<div id='name-id-item'></div>");
         $room_card.append("<div id='chatbox'></div>");
         $room_card.append("<div id='input-chat-item'></div>");
-        $room_card.append("<div id='leave-room-item'></div>");
 
         let $name_id_item = $("#name-id-item");
         $name_id_item.css(CSS_MENU_ITEM).append("<p id='room-name'>Room name : "+user.room.name+"</p>");
@@ -440,6 +455,57 @@
         $("#room-name").css(CSS_LINE_ITEM);
         $("#room-id").css(CSS_LINE_ITEM);
 
+        $("#chatbox").css(CSS_CHATBOX);
+        getMessagesFromDatabase();
+        setInterval(getMessagesFromDatabase, 1000);
+
+        let $input_chat_item = $("#input-chat-item");
+        $input_chat_item.css(CSS_MENU_ITEM).css({"display" : "flex", "align-content": "center"}).append("<input type='text' id='message-input' name='message' placeholder='Enter a message'>");
+        $("#message-input").css(CSS_FORM_INPUT);
+        $input_chat_item.append("<button id='message-submit' type='button'>Send message</button>")
+
+        let $leave_room_item = $("#leave-room-item");
+        $leave_room_item.css(CSS_MENU_ITEM).css({"display" : "flex", "margin-top" : "20px", "justify-content" : "flex-end"}).append("<button id='leave-room' type='button'>Leave room</button>");
+
+        $("#leave-room").css(CSS_FORM_SUBMIT).css("width", "25%").click(function() {
+            clearInterval(getMessagesFromDatabase);
+            user.setRoom(0);
+            $("#room-menu").remove();
+            mainMenuDisplay($("body"));
+        });
+
+        $("#message-submit").css(CSS_FORM_SUBMIT).css({"margin" : "0px", "width" : "25%"}).click(function() {
+            let message = $("#message-input").val();
+
+            if (message == "") {
+                alert("You must type something");
+            } else {
+                $.ajax({
+                    url: "http://raspdonut.alwaysdata.net/php/add_message.php",
+                    type: "POST",
+                    data: {'room_id' : user.room.id, 'user_id' : user.id, 'message' : message},
+                    dataType: "json"
+                }) .done(function(data) {
+                    getMessagesFromDatabase();
+                    $("#chatbox").scrollTop = $("#chatbox").scrollHeight;
+                    $("#message-input").val("");
+                });
+            }
+        });
+    }
+
+    function getMessagesFromDatabase() {
+        $.ajax({
+            url: "http://raspdonut.alwaysdata.net/php/get_messages.php",
+            type: "POST",
+            data: {'room_id' : user.room.id, 'last_message' : user.room.lastMessageID},
+            dataType: "json",
+        }) .done(function(data) {
+           data.forEach(message => $("#chatbox").append("<div>"+message['username']+": "+message['message']+"</div>"));
+           $("#chatbox div:nth-child(2n)").css("background-color", "#4C566A");
+           user.room.setLastMessageID(data[data.length-1]['message_id']);
+           console.log(data[data.length-1]['message_id']);
+        });
     }
 
     function appendDisconnectButton() {

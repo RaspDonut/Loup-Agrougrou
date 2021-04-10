@@ -2,6 +2,7 @@
     //use mysqli
     include 'user.php';
     include 'room.php';
+    include 'message.php';
 
     class DatabaseAccess {
         /**
@@ -115,6 +116,32 @@
             }
 
             return new Room($rand_id, $room_name, $creator_id);
+        }
+
+        public function getMessagesByRoomId(int $room_id, int $last_id): ?array {
+            $prepared_query = $this->mysqli->prepare('SELECT * FROM MESSAGES WHERE room_id = ? AND msg_id > ? ORDER BY msg_id ASC');
+            $prepared_query->bind_param('ii', $room_id, $last_id);
+            if(!$prepared_query->execute()) {
+                error_log("Error adding a new room (file: DatabaseAccess.php)", 3, "logs");
+            }
+
+            $result = $prepared_query->get_result();
+            while ($message_data = $result->fetch_array(MYSQLI_ASSOC)) {
+                $messages_array[] = new Message($message_data['msg_id'], $message_data['room_id'], $message_data['user_id'], $message_data['message']);
+            }
+            if (isset($messages_array)) {
+                return $messages_array;
+            }
+            return null;
+        }
+
+        public function addMessage(int $room_id, int $user_id, string $message) {
+            $prepared_query = $this->mysqli->prepare('INSERT INTO MESSAGES (room_id, user_id, message) VALUES (?, ?, ?)');
+            $prepared_query->bind_param('iis', $room_id, $user_id, $message);
+
+            if(!$prepared_query->execute()) {
+                error_log("Error adding a new room (file: DatabaseAccess.php)", 3, "logs");
+            }
         }
 
         /**
